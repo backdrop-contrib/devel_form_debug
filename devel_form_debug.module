@@ -157,7 +157,7 @@ function devel_form_debug_debug($input, $prefix = NULL, $suffix = NULL) {
 
   // Get the label that we should prepend to each 'Get path' button.
   $label = '$form';
-  backdrop_add_js(array('searchKrumo' => array('var' => array($label))), 'setting');
+  backdrop_add_js(array('searchKrumo' => array('variable' => array($label))), 'setting');
 
   $message = kprint_r($input, TRUE, $prefix);
   backdrop_set_message($message . $suffix, 'status');

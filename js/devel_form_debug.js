@@ -30,7 +30,7 @@
   };
 
   // Close dialog on overlay click.
-  $('.ui-widget-overlay').live("click", function() {
+  $('.ui-widget-overlay').on("click", function() {
     // Close the dialog.
     $("#devel-form-debug-dialog").dialog("close");
   });
