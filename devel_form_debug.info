@@ -1,10 +1,12 @@
 name = Devel Form Debug
 description = Find out form id and print out form contents easily.
-package = Development
 backdrop = 1.x
-type = modules
+type = module
 
-; files[] = devel_form_debug.module
-; dependencies[] = contextual
+maintainers[yorkshire-pudding] = Martin Price
+
+package = Development
+tags[] = Forms
+
 dependencies[] = devel
 dependencies[] = search_krumo
