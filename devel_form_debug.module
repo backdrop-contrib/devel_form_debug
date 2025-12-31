@@ -26,8 +26,9 @@ function devel_form_debug_menu() {
  */
 function devel_form_debug_form_alter(&$form, &$form_state, $form_id) {
 
-  // We show form contextual links on all forms except this module's forms (to not to cause circular recursion)
-  // to all users who have according permissions set.
+  // We show form contextual links on all forms except this module's forms (to
+  // not to cause circular recursion) to all users who have according
+  // permissions set.
   if (
     substr($form_id, 0, 16) !== 'devel_form_debug'
     && user_access('access contextual links')
@@ -35,10 +36,10 @@ function devel_form_debug_form_alter(&$form, &$form_state, $form_id) {
   ) {
 
     // Load modal window code.
-    drupal_add_library('system', 'drupal.ajax');
-    drupal_add_library('system', 'ui.dialog');
-    drupal_add_js(drupal_get_path('module', 'devel_form_debug') . '/devel_form_debug.js');
-    drupal_add_css(drupal_get_path('module', 'devel_form_debug') . '/devel_form_debug.css');
+    backdrop_add_library('system', 'backdrop.ajax');
+    backdrop_add_library('system', 'ui.dialog');
+    backdrop_add_js(backdrop_get_path('module', 'devel_form_debug') . '/js/devel_form_debug.js');
+    backdrop_add_css(backdrop_get_path('module', 'devel_form_debug') . '/css/devel_form_debug.css');
 
     // Prepare our contextual link.
     $links = array(
@@ -46,8 +47,8 @@ function devel_form_debug_form_alter(&$form, &$form_state, $form_id) {
         'href' => 'ajax/devel_form_debug/' . $form_id,
         'title' => t('Form ID') . ': ' . $form_id,
         'attributes' => array('class' => array('use-ajax')),
-        'query' => array('devel_form_debug__current_path' => request_uri())
-      )
+        'query' => array('devel_form_debug__current_path' => request_uri()),
+      ),
     );
 
     // Prepare render array.
@@ -71,14 +72,14 @@ function devel_form_debug_form_alter(&$form, &$form_state, $form_id) {
 
     // Dpm form if it's requested.
     if (isset($_SESSION['devel_form_debug_form_id__' . $form_id])) {
-      $parsed_request_url = drupal_parse_url(request_uri());
+      $parsed_request_url = backdrop_parse_url(request_uri());
       $parsed_request_url['attributes']['class'][] = 'devel_form_debug__button';
       $parsed_request_url['html'] = TRUE;
-      $devel_form_debug_hide_variables_form = drupal_get_form('devel_form_debug_hide_variables_form', $form_id, substr($parsed_request_url['path'], 1));
+      $devel_form_debug_hide_variables_form = backdrop_get_form('devel_form_debug_hide_variables_form', $form_id, substr($parsed_request_url['path'], 1));
       devel_form_debug_debug(
         $form,
         t('Variables for form_id <b>@form_id</b>:', array('@form_id' => $form_id)),
-        drupal_render($devel_form_debug_hide_variables_form)
+        backdrop_render($devel_form_debug_hide_variables_form)
       );
     }
 
@@ -94,13 +95,13 @@ function devel_form_debug_callback($form_id = NULL) {
     return 'No form id was specified. Error.';
   }
 
-  $parsed_current_url = drupal_parse_url($_GET['devel_form_debug__current_path']);
-  $contents[] = drupal_get_form('devel_form_debug_dialog_form', $form_id);
-  $contents[] = drupal_get_form('devel_form_debug_print_variables_form', $form_id, substr($parsed_current_url['path'], 1));
-  $commands[] = devel_form_debug_ajax_command_show_dialog(drupal_render($contents), t('Debug this form'));
+  $parsed_current_url = backdrop_parse_url($_GET['devel_form_debug__current_path']);
+  $contents[] = backdrop_get_form('devel_form_debug_dialog_form', $form_id);
+  $contents[] = backdrop_get_form('devel_form_debug_print_variables_form', $form_id, substr($parsed_current_url['path'], 1));
+  $commands[] = devel_form_debug_ajax_command_show_dialog(backdrop_render($contents), t('Debug this form'));
   $page = array(
     '#type' => 'ajax',
-    '#commands' => $commands
+    '#commands' => $commands,
   );
   ajax_deliver($page);
   exit();
@@ -115,18 +116,18 @@ function devel_form_debug_dialog_form($form, $form_state, $debug_form_id) {
   $form['id'] = array(
     '#type' => 'textfield',
     '#default_value' => $debug_form_id,
-    '#description' => t('Form ID'),
+    '#title' => t('Form ID'),
   );
 
+  $alter_function_template = '/**' . PHP_EOL .
+    ' * Implements hook_form_FORM_ID_alter() for ' . $debug_form_id . '().' . PHP_EOL .
+    ' */' . PHP_EOL .
+    'function hook_form_' . $debug_form_id . '_alter(&$form, &$form_state) {' . PHP_EOL .
+    '}';
   $form['hook'] = array(
     '#type' => 'textarea',
-    '#default_value' =>
-'
-/**
-  * Implements hook_form_FORM_ID_alter().
-  */
-function hook_form_' . $debug_form_id . '_alter(&$form, &$form_state) {}',
-    '#description' => t('Alter function template'),
+    '#title' => t('Alter function template'),
+    '#default_value' => $alter_function_template,
   );
 
   return $form;
@@ -156,26 +157,28 @@ function devel_form_debug_debug($input, $prefix = NULL, $suffix = NULL) {
 
   // Get the label that we should prepend to each 'Get path' button.
   $label = '$form';
-  drupal_add_js(array('searchKrumo' => array('var' => array($label))), 'setting');
+  backdrop_add_js(array('searchKrumo' => array('var' => array($label))), 'setting');
 
   $message = kprint_r($input, TRUE, $prefix);
-  drupal_set_message($message . $suffix, 'status');
+  backdrop_set_message($message . $suffix, 'status');
 }
 
 /**
  * Show Content in JqueryUI Dialog
  *
- * @param $html
+ * @param string $html
  *   The data to use with the jQuery append() method.
- * @param $settings
+ * @param string $title
+ *   The title for the dialog.
+ * @param array $settings
  *   An optional array of settings that will be used for this command only.
  *
- * @return
+ * @return array
  *   An array suitable for use with the ajax_render() function.
  *
  * @see http://docs.jquery.com/Manipulation/append#content
  */
-function devel_form_debug_ajax_command_show_dialog($html, $title = NULL, $settings = NULL) {
+function devel_form_debug_ajax_command_show_dialog($html, $title = '', array $settings = array()) {
   $command = array(
     'command' => 'develFormDebugShowDialog',
     'title' => $title,
@@ -202,7 +205,7 @@ function devel_form_debug_print_variables_form($form, $form_state, $debug_form_i
 
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Print out this form variables')
+    '#value' => t('Print form variables'),
   );
 
   return $form;
@@ -233,7 +236,7 @@ function devel_form_debug_hide_variables_form($form, $form_state, $debug_form_id
 
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('(x) hide form variables')
+    '#value' => t('(x) hide form variables'),
   );
 
   return $form;

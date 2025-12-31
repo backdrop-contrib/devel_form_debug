@@ -1,8 +1,10 @@
 name = Devel Form Debug
 description = Find out form id and print out form contents easily.
 package = Development
-core = 7.x
-files[] = devel_form_debug.module
-dependencies[] = contextual
+backdrop = 1.x
+type = modules
+
+; files[] = devel_form_debug.module
+; dependencies[] = contextual
 dependencies[] = devel
 dependencies[] = search_krumo

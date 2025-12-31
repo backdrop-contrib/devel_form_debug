@@ -9,7 +9,7 @@
    * @param response
    * @param status
    */
-  Drupal.ajax.prototype.commands.develFormDebugShowDialog = function (ajax, response, status) {
+  Backdrop.ajax.prototype.commands.develFormDebugShowDialog = function (ajax, response, status) {
 
     var body = $('body');
     $('> div#devel-form-debug-dialog', body).length ? $('> div#devel-form-debug-dialog', body) : $('<div id="devel-form-debug-dialog"></div>').appendTo(body);
@@ -26,7 +26,7 @@
     // Show the actual dialog.
     dialog.html(response.data).dialog({title: response.title}).dialog('open');
 
-    Drupal.attachBehaviors(dialog);
+    Backdrop.attachBehaviors(dialog);
   };
 
   // Close dialog on overlay click.
@@ -35,7 +35,7 @@
     $("#devel-form-debug-dialog").dialog("close");
   });
 
-  Drupal.behaviors.devel_form_debug = {
+  Backdrop.behaviors.devel_form_debug = {
     attach: function() {
       var text_input = $('#devel-form-debug-dialog-form input[type=text]'),
           text_area = $('#devel-form-debug-dialog-form textarea');
